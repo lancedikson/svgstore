@@ -19,7 +19,8 @@ const FIXTURE_SVGS = {
 	defsWithId: '<svg><defs><linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="a"><stop stop-color="#FFF" offset="0%"/><stop stop-color="#F0F0F0" offset="100%"/></linearGradient><path id="b" d=""/></defs><path fill="url(#a)" fill-rule="nonzero" d=""/><use xlink:href="#b"></use><use fill-rule="nonzero" xlink:href="#b"></use><path fill="url(#a)" fill-rule="nonzero" d=""/></svg>',
 	fooMask: '<svg><path id="a"/><rect mask="url(#a)"></rect></svg>',
 	barMask: '<svg><mask id="b"><path style="fill: red;"/></mask><rect mask="url(#b)"/></svg>',
-	pullOutFromSymbol: '<svg viewBox="0 0 100 100"><mask id="mask1"><rect x="0" y="0" width="100" height="100" fill="white"/></mask><circle cx="50" cy="50" r="50" mask="url(#mask1)"/></svg>'
+	pullMaskOutFromSymbol: '<svg viewBox="0 0 100 100"><mask id="mask1"><rect x="0" y="0" width="100" height="100" fill="white"/></mask><circle cx="50" cy="50" r="50" mask="url(#mask1)"/></svg>',
+	pullMasksOutFromSymbol: '<svg viewBox="0 0 100 100"><mask id="mask1"><rect x="0" y="0" width="100" height="50" fill="black"/></mask><mask id="mask2"><rect x="0" y="50" width="100" height="50" fill="white"/></mask><circle cx="50" cy="50" r="50" mask="url(#mask1)"/></svg>'
 };
 
 test('should create an svg document', async t => {
@@ -254,14 +255,41 @@ test('should pull a mask out from symbol section', async t => {
 	};
 
 	const store = svgstore(options)
-		.add('pullOutFromSymbol', doctype + FIXTURE_SVGS.pullOutFromSymbol);
+		.add('pullMaskOutFromSymbol', doctype + FIXTURE_SVGS.pullMaskOutFromSymbol);
 
 	const expected = '<svg id="spritesheet" style="display: none">' +
 		'<defs/>' +
 		'<mask id="mask1">' +
 		'<rect x="0" y="0" width="100" height="100" fill="white"/>' +
 		'</mask>' +
-		'<symbol id="pullOutFromSymbol" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" mask="url(#mask1)"/></symbol>' +
+		'<symbol id="pullMaskOutFromSymbol" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" mask="url(#mask1)"/></symbol>' +
+		'</svg>';
+
+	t.is(store.toString(), expected);
+});
+
+test('should pull two masks out from symbol section', async t => {
+	const options = {
+		inline: true,
+		svgAttrs: {
+			id: 'spritesheet',
+			style: 'display: none'
+		},
+		pullOutFromSymbol: true
+	};
+
+	const store = svgstore(options)
+		.add('pullMasksOutFromSymbol', doctype + FIXTURE_SVGS.pullMasksOutFromSymbol);
+
+	const expected = '<svg id="spritesheet" style="display: none">' +
+		'<defs/>' +
+		'<mask id="mask1">' +
+		'<rect x="0" y="0" width="100" height="50" fill="black"/>' +
+		'</mask>' +
+		'<mask id="mask2">' +
+		'<rect x="0" y="50" width="100" height="50" fill="white"/>' +
+		'</mask>' +
+		'<symbol id="pullMasksOutFromSymbol" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" mask="url(#mask1)"/></symbol>' +
 		'</svg>';
 
 	t.is(store.toString(), expected);
