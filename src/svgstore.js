@@ -112,6 +112,15 @@ function svgstore(options) {
 			if (addOptions.pullOutFromSymbol) {
 				childSymbol.each(function (i, el) {
 					var result = loadXml(el);
+
+					// copy fill-rule from the closest parent node to mask
+					// it neeeds to inherit fill-rule property
+					var fillRule = result('mask').closest('g[fill-rule]');
+					const fillRuleValue = fillRule.attr('fill-rule');
+					if (fillRuleValue !== undefined) {
+						result('mask').attr('fill-rule', fillRuleValue);
+					}
+
 					mask = result.html('mask');
 					result('mask').remove();
 
